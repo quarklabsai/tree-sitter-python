@@ -7,6 +7,8 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.egg_info import egg_info
 from wheel.bdist_wheel import bdist_wheel
 
+limited_api = not get_config_var("Py_GIL_DISABLED")
+
 
 class Build(build):
     def run(self):
@@ -32,7 +34,7 @@ class BuildExt(build_ext):
 class BdistWheel(bdist_wheel):
     def get_tag(self):
         python, abi, platform = super().get_tag()
-        if python.startswith("cp"):
+        if limited_api and python.startswith("cp"):
             python, abi = "cp310", "abi3"
         return python, abi, platform
 
@@ -64,7 +66,7 @@ setup(
                 ("TREE_SITTER_HIDE_SYMBOLS", None),
             ],
             include_dirs=["src"],
-            py_limited_api=not get_config_var("Py_GIL_DISABLED"),
+            py_limited_api=limited_api,
         )
     ],
     cmdclass={
